@@ -1,7 +1,7 @@
 import utils
 
 senior, junior = "Senior", "Junior"
-am, am_s, pm, n, no, do, al = "Morning", "Morning stayback", "Evening", "Night", "Night off", "Day off", "Annual leave"
+am, ams, pm, n, no, do, al = "AM", "AMS", "PM", "N", "NO", "DO", "AL"
 
 nurses = [
     "Azatuliana",
@@ -9,9 +9,9 @@ nurses = [
     "Fatimah",
     "Fazilawati",
     "Mimi",
-    "Nur aimi",
+    "Nuraimi",
     "Sariah",
-    "Siti sakinah",
+    "Sitisakinah",
     "Tina",
     "Wahidah",
          ]
@@ -22,19 +22,19 @@ roles = {
     "Fatimah": senior,
     "Fazilawati": senior,
     "Mimi": senior,
-    "Nur aimi": junior,
+    "Nuraimi": junior,
     "Sariah": senior,
-    "Siti sakinah": senior,
+    "Sitisakinah": senior,
     "Tina": senior,
     "Wahidah": junior,
 }
 
-shift = {
+shift_timings = {
     am: {
         "start": utils.set_time(7),
         "end": utils.set_time(14)
     },
-    am_s: {
+    ams: {
         "start": utils.set_time(7),
         "end": utils.set_time(17)
     },
@@ -44,8 +44,20 @@ shift = {
     },
     n: {
         "start": utils.set_time(21),
+        "end": utils.set_time(0)
+    },
+    no: {
+        "start": utils.set_time(0),
         "end": utils.set_time(7)
-    }
+    },
+    al: {
+        "start": utils.set_time(23),
+        "end": utils.set_time(0)
+    },
+    do: {
+        "start": utils.set_time(23),
+        "end": utils.set_time(0)
+    },
 }
 
 # Weekly sum constraints on shifts days:
@@ -66,43 +78,78 @@ shift_constraints = [
     (3, 1, 2, 20, 3, 4, 5),
 ]
 
-weekly_cover_demands = [
-    (3, 3, 1),  # Monday
-    (3, 3, 1),  # Tuesday
-    (3, 3, 1),  # Wednesday
-    (3, 3, 1),  # Thursday
-    (3, 3, 1),  # Friday
-    (3, 3, 1),  # Saturday
-    (3, 3, 1),  # Sunday
-]
-
 shift_min_covers = {
-    am: 3,
-    am: (1,2)
-    pm: 3,
+    am: 2,
+    ams: (1,2),
+    pm: 2,
     n: 1
 }
 
-night_sequence = ({
-    0: n,
-    1: n,
-    2: no
-}, "always", 0)
+shift_transition = [
+    # ({
+    #     0: n,
+    #     1: n,
+    #     2: no
+    # }, "always", 0),
+    # ({
+    #     0: n,
+    #     1: n
+    # }, "max", 20),
+    ({
+        0: n,
+        1: no
+    }, "max", 20),
+    ({
+        0: no,
+        1: n
+    }, "never", 0),
+    ({
+        0: n,
+        3: n
+    }, "never", 0),
+    ({
+        0: no,
+        1: pm
+    }, "max", 5),
+    ({
+        0: no,
+        1: do
+    }, "max", 10),
+    ({
+        0: no,
+        1: n
+    }, "never", 0),
+    ({
+        0: n,
+        3: no
+    }, "never", 0),
+    ({
+        0: no,
+        1: no
+    }, "never", 0),
+    ({
+        0: pm,
+        1: no
+    }, "never", 0),
+    ({
+        0: am,
+        1: no
+    }, "never", 0),
+    ({
+        0: do,
+        1: no
+    }, "never", 0),
+    # ({
+    #     0: ams,
+    #     1: no
+    # }, "never", 0),
+]
 
-night_off_sequence = ({
-    0: no,
-    1: am
-}, "never", 0)
-
-night_off_max_pm = ({
-    0: no,
-    1: pm
-}, "max", 5)
-
-night_off_max_do = ({
-    0: no,
-    1: do
-}, "max", 10)
+sum_constraints =[
+    # slot, slot_type, hard_min, soft_min, min_cost, soft_max, hard_max, max_cost
+    (n, "weekly", 0, 0, 10, 1, 2, 10),
+    (ams, "weekly", 0, 0, 10, 1, 2, 10)
+]
 
 #excess cover for am, pm, n
 excess_cover_penalties = (2, 2, 5)
