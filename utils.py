@@ -1,5 +1,6 @@
 import datetime
 import pandas as pd
+import numpy as np
 
 def set_time(hour):
     _date = datetime.datetime(year=2023, month=1, day=1, hour=hour)
@@ -59,55 +60,6 @@ def add_soft_sequence_constraint(model, works, desired_length):
             print(negated_bounded_span(works, start, length))
             model.AddBoolOr(negated_bounded_span(works, start, length))
 
-    # Just forbid any sequence of true variables with length hard_max + 1
-    # for start in range(len(works) - hard_max):
-    #     model.AddBoolOr(
-    #         [works[i].Not() for i in range(start, start + hard_max + 1)]
-    #     )
-
-# def add_soft_sequence_constraint(model, works, hard_min, soft_min, min_cost,
-#                                     soft_max, hard_max, max_cost, prefix):
-#     cost_literals = []
-#     cost_coefficients = []
-
-#     # Forbid sequences that are too short.
-#     for length in range(1, hard_min):
-#         for start in range(len(works) - length + 1):
-#             model.AddBoolOr(negated_bounded_span(works, start, length))
-
-#     # Penalize sequences that are below the soft limit.
-#     if min_cost > 0:
-#         for length in range(hard_min, soft_min):
-#             for start in range(len(works) - length + 1):
-#                 span = negated_bounded_span(works, start, length)
-#                 name = ': under_span(start=%i, length=%i)' % (start, length)
-#                 lit = model.NewBoolVar(prefix + name)
-#                 span.append(lit)
-#                 model.AddBoolOr(span)
-#                 cost_literals.append(lit)
-#                 # We filter exactly the sequence with a short length.
-#                 # The penalty is proportional to the delta with soft_min.
-#                 cost_coefficients.append(min_cost * (soft_min - length))
-
-#     # Penalize sequences that are above the soft limit.
-#     if max_cost > 0:
-#         for length in range(soft_max + 1, hard_max + 1):
-#             for start in range(len(works) - length + 1):
-#                 span = negated_bounded_span(works, start, length)
-#                 name = ': over_span(start=%i, length=%i)' % (start, length)
-#                 lit = model.NewBoolVar(prefix + name)
-#                 span.append(lit)
-#                 model.AddBoolOr(span)
-#                 cost_literals.append(lit)
-#                 # Cost paid is max_cost * excess length.
-#                 cost_coefficients.append(max_cost * (length - soft_max))
-
-#     # Just forbid any sequence of true variables with length hard_max + 1
-#     for start in range(len(works) - hard_max):
-#         model.AddBoolOr(
-#             [works[i].Not() for i in range(start, start + hard_max + 1)])
-#     return cost_literals, cost_coefficients
-
 
 def add_soft_sum_constraint(model, works, hard_min, soft_min, min_cost,
                             soft_max, hard_max, max_cost, prefix):
@@ -153,3 +105,24 @@ def get_data_to_tuple(path):
             else:
                 tup.append((col, item, columns[n-1].to_pydatetime()))
     return tup
+
+def get_request_to_tuple(path):
+    df = pd.read_excel(path, index_col=0)
+    df.fillna(0, inplace=True)
+    columns = df.columns
+    tup = []
+    for i, row in enumerate(df.itertuples()):
+        for n, item in enumerate(row):
+            if n == 0:
+                col = item
+            else:
+                if item != 0:
+                    tup.append((col, item, columns[n-1].to_pydatetime()))
+    return tup
+
+def get_data_to_arr_dict(path: str) -> dict:
+    check_roster = pd.read_excel(path, index_col=0)
+    data = {}
+    for i, row in enumerate(check_roster.iterrows()):
+        data[row[0]] = row[1].tolist()
+    return data

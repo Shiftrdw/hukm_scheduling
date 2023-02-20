@@ -1,32 +1,34 @@
 import utils
 
 senior, junior = "Senior", "Junior"
-am, ams, pm, n, no, do, al = "AM", "AMS", "PM", "N", "NO", "DO", "AL"
+am, ams, pm, n, no, do, al, dop = "AM", "AMS", "PM", "N", "NO", "DO", "AL", "DOP"
 
-nurses = [
-    "Azatuliana",
-    "Fatehah",
-    "Fatimah",
-    "Fazilawati",
-    "Mimi",
-    "Nuraimi",
-    "Sariah",
-    "Sitisakinah",
-    "Tina",
-    "Wahidah",
-         ]
+nurses = [f'J{i+1}' for i in range(10)]
+
+# nurses = [
+#     "Azatuliana",
+#     "Fatehah",
+#     "Fatimah",
+#     "Fazilawati",
+#     "Mimi",
+#     "Nuraimi",
+#     "Sariah",
+#     "Sitisakinah",
+#     "Tina",
+#     "Wahidah",
+#          ]
 
 roles = {
-    "Azatuliana": senior,
-    "Fatehah": junior,
-    "Fatimah": senior,
-    "Fazilawati": senior,
-    "Mimi": senior,
-    "Nuraimi": junior,
-    "Sariah": senior,
-    "Sitisakinah": senior,
-    "Tina": senior,
-    "Wahidah": junior,
+    "J1": senior,
+    "J2": senior,
+    "J3": senior,
+    "J4": senior,
+    "J5": senior,
+    "J6": senior,
+    "J7": senior,
+    "J8": senior,
+    "J9": senior,
+    "J10": junior,
 }
 
 shift_timings = {
@@ -58,25 +60,12 @@ shift_timings = {
         "start": utils.set_time(23),
         "end": utils.set_time(0)
     },
+    dop: {
+        "start": utils.set_time(23),
+        "end": utils.set_time(0)
+    },
 }
 
-# Weekly sum constraints on shifts days:
-    #     (shift, hard_min, soft_min, min_penalty,
-    #             soft_max, hard_max, max_penalty)
-weekly_sum_constraints = [
-    # Constraints on rests per week.
-    (n, 1, 2, 7, 2, 3, 4),
-    # At least 1 night shift per week (penalized). At most 4 (hard).
-    (3, 0, 1, 3, 4, 4, 0),
-]
-
-shift_constraints = [
-    # One or two consecutive days of rest, this is a hard constraint.
-    (0, 1, 1, 0, 2, 2, 0),
-    # between 2 and 3 consecutive days of night shifts, 1 and 4 are
-    # possible but penalized.
-    (3, 1, 2, 20, 3, 4, 5),
-]
 
 shift_min_covers = {
     am: 2,
@@ -86,42 +75,39 @@ shift_min_covers = {
 }
 
 shift_transition = [
-    # ({
-    #     0: n,
-    #     1: n,
-    #     2: no
-    # }, "always", 0),
-    # ({
-    #     0: n,
-    #     1: n
-    # }, "max", 20),
     ({
         0: n,
         1: no
-    }, "max", 20),
-    ({
-        0: no,
-        1: n
-    }, "never", 0),
-    ({
-        0: n,
-        3: n
-    }, "never", 0),
+    }, "always", 0),
+    ##################
     ({
         0: no,
         1: pm
-    }, "max", 5),
+    }, "max", 80),
     ({
         0: no,
         1: do
-    }, "max", 10),
+    }, "max", 100),
+    ({
+        0: al,
+        1: do
+    }, "max", 100),
+    ({
+        0: do,
+        1: al
+    }, "max", 100),
+    ({
+        0: no,
+        1: am
+    }, "min", 40),
+    ({
+        0: no,
+        1: ams
+    }, "min", 40),
+    ##################
     ({
         0: no,
         1: n
-    }, "never", 0),
-    ({
-        0: n,
-        3: no
     }, "never", 0),
     ({
         0: no,
@@ -139,10 +125,18 @@ shift_transition = [
         0: do,
         1: no
     }, "never", 0),
-    # ({
-    #     0: ams,
-    #     1: no
-    # }, "never", 0),
+    ({
+        0: dop,
+        1: no
+    }, "never", 0),
+    ({
+        0: ams,
+        1: no
+    }, "never", 0),
+    ({
+        0: al,
+        1: no
+    }, "never", 0),
 ]
 
 sum_constraints =[
